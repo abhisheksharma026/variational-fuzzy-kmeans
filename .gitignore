@@ -9,3 +9,4 @@ venv/
 *.tsv
 *.json
 *.pickle
+.DS_Store/

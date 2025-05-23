@@ -1,0 +1,11 @@
+__pycache__/
+*.log
+*.aux
+*.out
+*.pdf
+.env
+venv/
+*.csv
+*.tsv
+*.json
+*.pickle

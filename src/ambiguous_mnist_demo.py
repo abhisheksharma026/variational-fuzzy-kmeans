@@ -148,12 +148,12 @@ def main():
     avg_conf_soft = np.mean(np.max(soft_model.u, axis=1))
     print(f"[SoftKMeans] Avg Max Conf: {avg_conf_soft:.4f}")
 
-    print("🔁 Searching for best BFKM entropy to expose ambiguity...")
+    print("Searching for best BFKM entropy to expose ambiguity...")
     bfkm_model, u_bfkm = try_fit_bfkm_for_ambiguity(X_pca, min_valid=5)
 
     u_soft = soft_model.u
 
-    print("✅ Plotting soft examples...")
+    print("Plotting soft examples...")
     plot_soft_examples(X_full, y_true, u_bfkm, u_soft, threshold=0.95, num_samples=5)
 
 

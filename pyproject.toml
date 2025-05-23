@@ -2,7 +2,7 @@
 name = "entropy-bfkm"
 version = "0.1.0"
 description = "Entropy-Regularized Bayesian Fuzzy K-Means clustering"
-authors = ["Abhishek Sharma <your_email@example.com>"]
+authors = ["Abhishek Sharma"]
 packages = [{ include = "*", from = "src" }]
 readme = "README.md"
 

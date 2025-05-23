@@ -10,3 +10,5 @@ venv/
 *.json
 *.pickle
 .DS_Store/
+**/.DS_Store
+

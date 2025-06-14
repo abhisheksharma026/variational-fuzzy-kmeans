@@ -25,12 +25,12 @@ def load_mnist_subset(n_samples=5000, n_components=50, random_state=42):
     return X, X_full, y  # Return BOTH PCA and Original!
 
 
-def match_average_confidence(model_class, X, target_conf, param_grid, is_bfkm):
+def match_average_confidence(model_class, X, target_conf, param_grid, is_vfkm):
     best_param = None
     best_gap = float('inf')
 
     for param in param_grid:
-        if is_bfkm:
+        if is_vfkm:
             model = model_class(n_clusters=10, lambda_entropy=param)
         else:
             model = model_class(n_clusters=10, temperature=param)
@@ -46,44 +46,44 @@ def match_average_confidence(model_class, X, target_conf, param_grid, is_bfkm):
     return best_param
 
 
-def try_fit_bfkm_for_ambiguity(X_pca, min_valid=5, max_attempts=10):
+def try_fit_vfkm_for_ambiguity(X_pca, min_valid=5, max_attempts=10):
     """
-    Incrementally search for a BFKM model with sufficient ambiguous examples.
+    Incrementally search for a vfkm model with sufficient ambiguous examples.
     Returns best-fit model and its membership matrix.
     """
     for entropy_val in np.linspace(1.0, 10.0, max_attempts):
         model = RobustEntropyVFKM(n_clusters=10, lambda_entropy=entropy_val)
         model.fit(X_pca)
-        u_bfkm = model.predict_proba(X_pca)
+        u_vfkm = model.predict_proba(X_pca)
 
         min_clusters = 3
         min_thresh = 0.05
         max_prob = 0.95
         ambiguous = [
-            i for i, row in enumerate(u_bfkm)
+            i for i, row in enumerate(u_vfkm)
             if np.sum(row > min_thresh) >= min_clusters and np.max(row) < max_prob
         ]
 
         print(f"[λ={entropy_val:.2f}] Found {len(ambiguous)} ambiguous examples.")
 
         if len(ambiguous) >= min_valid:
-            return model, u_bfkm
+            return model, u_vfkm
 
-    raise RuntimeError(f"❌ No entropy value found producing ≥{min_valid} ambiguous samples.")
+    raise RuntimeError(f"No entropy value found producing ≥{min_valid} ambiguous samples.")
 
 
-def plot_soft_examples(X_full, y_true, u_bfkm, u_soft, threshold=0.95, num_samples=5):
+def plot_soft_examples(X_full, y_true, u_vfkm, u_soft, threshold=0.95, num_samples=5):
     min_nonzero_clusters = 3
     min_membership_threshold = 0.05
 
     valid_indices = np.where([
         (np.sum(row > min_membership_threshold) >= min_nonzero_clusters) and (np.max(row) < threshold)
-        for row in u_bfkm
+        for row in u_vfkm
     ])[0]
 
     if len(valid_indices) < num_samples:
         raise ValueError(
-            f"❌ Still too few valid ambiguous examples (found {len(valid_indices)}). "
+            f"Still too few valid ambiguous examples (found {len(valid_indices)}). "
             f"Try reducing `min_nonzero_clusters` or increasing `threshold`."
         )
 
@@ -97,17 +97,17 @@ def plot_soft_examples(X_full, y_true, u_bfkm, u_soft, threshold=0.95, num_sampl
         axs[0, i].imshow(image, cmap="gray")
         axs[0, i].axis('off')
         axs[0, i].set_title(
-            f"Label: {y_true[idx]}\nBFKM={np.max(u_bfkm[idx]):.3f} | Soft={np.max(u_soft[idx]):.3f}",
+            f"Label: {y_true[idx]}\nVFKM={np.max(u_vfkm[idx]):.3f} | SoftKMeans={np.max(u_soft[idx]):.3f}",
             fontsize=10
         )
 
-        x = np.arange(len(u_bfkm[idx]))
+        x = np.arange(len(u_vfkm[idx]))
 
-        axs[1, i].bar(x, u_bfkm[idx], color='royalblue', alpha=0.5, label='BFKM', width=0.4)
+        axs[1, i].bar(x, u_vfkm[idx], color='royalblue', alpha=0.5, label='VFKM', width=0.4)
         axs[1, i].bar(x, u_soft[idx], color='coral', alpha=0.5, label='SoftKMeans', width=0.25)
 
-        # Annotate BFKM bars (blue)
-        for xi, val in enumerate(u_bfkm[idx]):
+        # Annotate vfkm bars (blue)
+        for xi, val in enumerate(u_vfkm[idx]):
             if val > 1e-3:
                 axs[1, i].text(
                     xi - 0.2, val * 0.8, f"{val:.3f}",
@@ -148,13 +148,13 @@ def main():
     avg_conf_soft = np.mean(np.max(soft_model.u, axis=1))
     print(f"[SoftKMeans] Avg Max Conf: {avg_conf_soft:.4f}")
 
-    print("Searching for best BFKM entropy to expose ambiguity...")
-    bfkm_model, u_bfkm = try_fit_bfkm_for_ambiguity(X_pca, min_valid=5)
+    print("Searching for best VFKM entropy to expose ambiguity...")
+    vfkm_model, u_vfkm = try_fit_vfkm_for_ambiguity(X_pca, min_valid=5)
 
     u_soft = soft_model.u
 
     print("Plotting soft examples...")
-    plot_soft_examples(X_full, y_true, u_bfkm, u_soft, threshold=0.95, num_samples=5)
+    plot_soft_examples(X_full, y_true, u_vfkm, u_soft, threshold=0.95, num_samples=5)
 
 
 if __name__ == "__main__":

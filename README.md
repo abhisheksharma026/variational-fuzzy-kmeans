@@ -33,3 +33,17 @@ Agglomerative again leads in ARI and NMI. VFKM variants and Soft-KMeans outperfo
 VFKM Ablations:
 Disabling entropy or KL often results in faster convergence but sacrifices stability and interpretability. The full VFKM model achieves balanced performance across metrics.
 
+---
+If you use this work, please cite it as: 
+
+```
+@misc{sharma_2025_variational_fuzzy_kmeans,
+  author       = {Abhishek Sharma},
+  title        = {Variational Fuzzy K-Means: A Free Energy-Based Approach},
+  year         = {2025},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.15667345},
+  url          = {https://doi.org/10.5281/zenodo.15667345}
+}
+```
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15667345.svg)](https://doi.org/10.5281/zenodo.15667345)
